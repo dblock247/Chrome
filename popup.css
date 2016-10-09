@@ -1,0 +1,17 @@
+html {
+	font-size: 16px;
+}
+
+
+h1 {
+	color: red;
+	font-size: .85rem;
+	width: 200px;
+}
+
+ul {
+	font-size: .75rem;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}

@@ -1,0 +1,30 @@
+{
+	"manifest_version": 2,
+	"name": "Hello World",
+	"description": "Frist Chrome Extension",
+	"version": "1.0.0",
+
+	"browser_action": {
+		"default_icon": "icon.png",
+		"default_popup": "popup.html"
+	},
+
+	"options_page": "options.html",
+
+	"background": {
+		"scripts": ["eventPage.js"],
+		"persistent": false
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["https://google.com/*"],
+			"js": ["contentScript.js", "jquery-3.1.1.min.js"]
+		}
+	],
+
+	"permissions": [
+		"tabs",
+		"https://www.google.com/*"
+	]
+}
