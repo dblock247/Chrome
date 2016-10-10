@@ -6,6 +6,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 			console.log(tabs[0]);
 			chrome.pageAction.show(tabs[0].id);
+			chrome.pageAction.setPopup({ tabId: tabs[0].id, popup: "popup.html"});
 		});
 	}
 });
+
+
