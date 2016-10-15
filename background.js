@@ -2,13 +2,13 @@
  * Created by londreblocker on 10/7/16.
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	if (request.action == "show") {
+	//if (request.action == "show") {
 		chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-			console.log(tabs[0]);
-			chrome.pageAction.show(tabs[0].id);
-			chrome.pageAction.setPopup({ tabId: tabs[0].id, popup: "popup.html"});
+			//console.log(tabs[0]);
+			//chrome.pageAction.show(tabs[0].id);
+			//chrome.pageAction.setPopup({ tabId: tabs[0].id, popup: "popup.html"});
 		});
-	}
+	//}
 });
 
 
