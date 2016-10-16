@@ -17,8 +17,8 @@
 
 	"content_scripts": [
 		{
-			"matches": ["https://www.google.com/"],
-			"js": ["content.js", "jquery-3.1.1.min.js"]
+			"matches": ["https://*.google.com/*"],
+			"js": ["content.js", "jquery-3.1.1.min.js", "moment.js", "numeral.js"]
 		}
 	],
 
