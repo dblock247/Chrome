@@ -1,6 +1,13 @@
- /**
+/**
  * Created by londreblocker on 10/7/16.
  */
- // TODO: Show protecthion image
- 
-chrome.runtime.sendMessage({ action: "show" });
+chrome.runtime.sendMessage({sender: "OrderTicket"}, function() {
+	console.log("Message Sent");
+	// Store tab info
+});
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	if (request.sender == "email") {
+		window.location.href = request.location;
+	}
+});
