@@ -1,64 +1,33 @@
 /**
  * Created by londreblocker on 10/7/16.
  */
-var debug = true;
-var secureTab = null;
-var secureTabId = -1;
-var oldTab = null;
+
 
 /**
- * Enums
+ * Message Listener
+ *
+ * Listens for messages from the content script. If the message is from a OrderTicket
+ * it records the id of the tab that will be protected.
  */
-
-var WindowState = {
-	normal: "normal",
-	minimized: "minimized",
-	maximized: "maximized",
-	fullscreen: "fullscreen",
-	docked: "docked"
-};
-
-var TemplateType = {
-	basic: "basic",
-	image: "image",
-	list: "list",
-	progress: "progress"
-};
-
-var ResourceType = {
-	mainFrame: "main_frame",
-	subFrame: "sub_frame",
-	stylesheet: "stylesheet",
-	script: "script",
-	image: "image",
-	font: "font",
-	object: "object",
-	xmlhttprequest: "xmlhttprequest",
-	ping: "ping",
-	other: "other"
-};
-
-var OnBeforeRequestOptions = {
-	blocking: "blocking",
-	requestBody: "requestBody"
-};
-
-
-if (debug) console.log("background.js");
-
-// Listen for message from content script
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	if (request.sender == "OrderTicket") {
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+	if (message.tab == "OrderTicket") {
 		oldTab = secureTabId;
-		//if (sender.tab.id != oldTab && oldTab > -1) destroy([oldTab]);
+		if (sender.tab.id != oldTab && oldTab > -1 && singleton) destroy([oldTab]);
 		secureTab = sender.tab;
 		secureTabId = sender.tab.id;
+		sendResponse({protected: true});
 	}
 });
 
-// Request Event Listener
+/**
+ * Request Listener
+ *
+ * Listens for outgoing requests. It acts as the requests gatekeeper. It allows
+ * request that meet certain criteria and blocks all other requests.
+ */
 chrome.webRequest.onBeforeRequest.addListener(function (request) {
-		if (request.method == "GET") return {cancel: false};
+		//if (request.method == "GET") return {cancel: false};
+		if (isError()) return {cancel: true};
 		//if (debug) log.console(request);
 		if (debug && request.method == "POST") console.log("[" + moment(request.timeStamp).format("LLL") + "]: body.raw - " + request.requestBody.raw);
 		if (debug && request.method == "POST") console.log("[" + moment(request.timeStamp).format("LLL") + "]: body.formData - " + request.requestBody.formData);
@@ -69,6 +38,11 @@ chrome.webRequest.onBeforeRequest.addListener(function (request) {
 	["blocking", "requestBody"]
 );
 
+/**
+ * Requests Completion Listener
+ *
+ * Listens for complete requests and logs the request info.
+ */
 chrome.webRequest.onCompleted.addListener(function (request) {
 		log.complete(request);
 		if (debug) log.debug();
@@ -77,158 +51,40 @@ chrome.webRequest.onCompleted.addListener(function (request) {
 	["responseHeaders"]
 );
 
+/**
+ * Request Error Listener
+ *
+ * Listens for request error and manually blocked requests. When there is an error
+ * or a blocked request a notification is sent to the user. The user can choose to
+ * Ignore the error or send the error diagnotics log to the support email.
+ */
 chrome.webRequest.onErrorOccurred.addListener(function (request) {
 		log.error(request);
 		if (debug) log.dump();
+		notify("email", "Send error log", "Click Yes to email your error logs to customer support");
 	},
 	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.xmlhttprequest]}
 );
 
-// Fires when the active tab in a window changes
-chrome.tabs.onActivated.addListener(function (activeInfo) {
-	if (debug) console.log("windowId: " + activeInfo.windowId + " tabId: " + activeInfo.tabId);
-});
-
-// Fired when a tab is closed.
+/**
+ * Tab Close Event Listener
+ *
+ * Listens for closed tabs. If the closed tabId == secureTabId the listener performs the clean
+ * up of local variables.
+ */
 chrome.tabs.onRemoved.addListener(function (tabId, window) {
 	if (debug) console.log("closed tab: " + tabId + " in window: " + window.windowId);
-	if (tabId == secureTabId) {secureTabId = -1; oldTab = null; log.logs = [];}
+	if (tabId == secureTabId) {secureTabId = -1; oldTab = null; log.destroy();}
 });
 
 /**
- * Notifications
+ * Notification Button Click Listener
+ *
+ * Listens for button click action from the notification. It performs the correct actions
+ * based upon the users actions.
  */
-
 chrome.notifications.onButtonClicked.addListener(function (notificationId, buttonIndex) {
 	if (debug) console.log("notificationId: " + notificationId + " buttonIndex: " + buttonIndex);
+	if (notificationId == "email" && buttonIndex == 0) log.send();
 	clearNotification(notificationId);
-	setBadge("");
 });
-
-function notify(id, title, message) {
-	
-	var options = {
-		type: TemplateType.basic,
-		title: title,
-		message: message,
-		priority: 2,
-		iconUrl: "icon.png",
-		buttons: [
-			{title: "Send"},
-			{title: "Cancel"}
-		]
-	};
-	
-	chrome.notifications.create(id, options, function (notificationId) { });
-}
-
-function updateNotification(notificationId) {
-	chrome.notifications.update(notificationId, options, function (wasUpdated) {
-		
-	});
-}
-
-function clearNotification(notificationId) {
-	chrome.notifications.clear(notificationId, function (wasCleared) {
-		
-	});
-}
-
-function setBadge(text) {
-	chrome.browserAction.setBadgeBackgroundColor({color: "#f00", tabId: secureTabId});
-	chrome.browserAction.setBadgeText({text: text.toString(), tabId: secureTabId});
-}
-
-/**
- * Utility Functions
- */
-
-// Send email
-function email(mail) {
-	mail.to = (mail.to != null) ? mail.to : "londre.blocker@gmail.com";
-	mail.from = (mail.from != null) ? mail.from : "no-reply@gmail.com";
-	mail.subject = (mail.subject != null) ? mail.subject : "Email Logs";
-	mail.body = (mail.body != null) ? mail.body : "";
-	
-	var link = "mailto:" + mail.to + "?subject=" + mail.subject + "&body=" + mail.body;
-	if (debug) console.log(link);
-	
-	chrome.tabs.sendMessage(secureTabId, {sender: "email", location: link}, function (response) { });
-	
-	
-}
-
-// Closes one or more tabs. [tabIds]
-function destroy(tabIds) {
-	chrome.tabs.remove(tabIds, function () {
-		
-	});
-}
-
-// Reload a tab.
-function reload(tabId) {
-	chrome.tabs.reload(tabId, function () {
-		
-	});
-}
-
-// Select a window
-function selectWindow(windowId) {
-	
-	var updateInfo = {
-		focused: true,
-		drawAttention: true,
-		state: WindowState.normal
-	};
-	
-	chrome.windows.update(windowId, updateInfo, function (window) {
-		if (debug) console.log(window);
-	})
-}
-
-var log =  {
-	logs: [],
-	action: {
-		allow: "ALLOW",
-		deny: "DENY",
-		complete: "COMPLETE",
-		error: "ERROR"
-	},
-	allow: function (request) {
-		this.logs.push(this.format(request, this.action.allow));
-	},
-	deny: function (request) {
-		this.logs.push(this.format(request, this.action.deny));
-	},
-	complete: function (request) {
-		this.logs.push(this.format(request, this.action.complete));
-	},
-	error: function(request) {
-		this.logs.push(this.format(request, this.action.error));
-	},
-	format: function (request, action) {
-		return "[" + moment(request.timeStamp)
-				.format("YYYY-MM-DD hh:mm:ss A") + "]: [" + action + "] [" + request.method + "] " + request.url;
-	},
-	print: function () {
-		return this.logs.join("\n");
-	},
-	debug: function () {
-		console.log(this.last());
-	},
-	dump: function () {
-		console.log(this.print());
-	},
-	last: function () {
-		if (this.logs.length > 0) return this.logs[this.logs.length - 1];
-	},
-	first: function () {
-		if (this.logs.length > 0) return this.logs[0];
-	},
-	send: function () {
-		email(this.logs.join("\n"));
-	},
-	console: function (object) {
-		console.log(object);
-	}
-};

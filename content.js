@@ -1,13 +1,19 @@
 /**
  * Created by londreblocker on 10/7/16.
  */
-chrome.runtime.sendMessage({sender: "OrderTicket"}, function() {
-	console.log("Message Sent");
-	// Store tab info
+
+/**
+ * Sends messsage to background script alerting it that it needs
+ * protection.
+ */
+chrome.runtime.sendMessage({tab: "OrderTicket"}, function (response) {
+	// If response == protected show protection
+	if (response.protected) shield();
 });
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-	if (request.sender == "email") {
-		window.location.href = request.location;
-	}
-});
+/**
+ * Adds protection visual to order ticket window
+ */
+function shield() {
+	
+}
