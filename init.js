@@ -139,7 +139,7 @@ function email(mail) {
 	chrome.tabs.create({active: false, url: url}, function (tab) {
 		setTimeout(function () {
 			destroy([tab.id]);
-		}, 300)
+		}, 500)
 	})
 }
 
