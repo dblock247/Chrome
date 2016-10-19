@@ -11,7 +11,7 @@
 	},
 
 	"background": {
-		"scripts": ["init.js", "log.js", "background.js", "jquery-3.1.1.min.js", "moment.js", "numeral.js"],
+		"scripts": ["config.js", "lib.js", "log.js", "background.js", "jquery-3.1.1.min.js", "moment.js", "numeral.js"],
 		"persistent": true
 	},
 

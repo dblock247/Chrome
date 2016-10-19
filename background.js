@@ -34,7 +34,7 @@ chrome.webRequest.onBeforeRequest.addListener(function (request) {
 		log.allow(request);
 		if (debug) log.debug();
 	},
-	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.xmlhttprequest]},
+	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.XmlHttpRequest]},
 	["blocking", "requestBody"]
 );
 
@@ -47,7 +47,7 @@ chrome.webRequest.onCompleted.addListener(function (request) {
 		log.complete(request);
 		if (debug) log.debug();
 	},
-	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.xmlhttprequest]},
+	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.XmlHttpRequest]},
 	["responseHeaders"]
 );
 
@@ -63,7 +63,7 @@ chrome.webRequest.onErrorOccurred.addListener(function (request) {
 		if (debug) log.dump();
 		notify("email", "Send error log", "Click Yes to email your error logs to customer support");
 	},
-	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.xmlhttprequest]}
+	{tabId: secureTabId, urls: ["<all_urls>"], types: [ResourceType.XmlHttpRequest]}
 );
 
 /**

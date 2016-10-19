@@ -5,60 +5,6 @@
  * Created by londreblocker on 10/7/16.
  */
 
-/**
- * Local variables
- */
-var debug = true;
-var secureTab = null;
-var secureTabId = -1;
-var oldTab = null;
-var singleton = false;
-
-/**
- * Window State Enum
- *
- * Controls how the window will be placed on the screen
- * @type {{normal: string, minimized: string, maximized: string, fullscreen: string, docked: string}}
- */
-var WindowState = {
-	normal: "normal",
-	minimized: "minimized",
-	maximized: "maximized",
-	fullscreen: "fullscreen",
-	docked: "docked"
-};
-
-/**
- * Template Type Enum
- *
- * Controlls the type of notification that will appear
- * @type {{basic: string, image: string, list: string, progress: string}}
- */
-var TemplateType = {
-	basic: "basic",
-	image: "image",
-	list: "list",
-	progress: "progress"
-};
-
-/**
- * Resource Type Enum
- *
- * Filter type s
- * @type {{mainFrame: string, subFrame: string, stylesheet: string, script: string, image: string, font: string, object: string, xmlhttprequest: string, ping: string, other: string}}
- */
-var ResourceType = {
-	mainFrame: "main_frame",
-	subFrame: "sub_frame",
-	stylesheet: "stylesheet",
-	script: "script",
-	image: "image",
-	font: "font",
-	object: "object",
-	xmlhttprequest: "xmlhttprequest",
-	ping: "ping",
-	other: "other"
-};
 
 /**
  * Sends notification the the screen
@@ -70,7 +16,7 @@ var ResourceType = {
 function notify(id, title, message) {
 	
 	var options = {
-		type: TemplateType.basic,
+		type: TemplateType.Basic,
 		title: title,
 		message: message,
 		priority: 2,
@@ -175,7 +121,7 @@ function selectWindow(windowId) {
 	var updateInfo = {
 		focused: true,
 		drawAttention: true,
-		state: WindowState.normal
+		state: WindowState.Normal
 	};
 	
 	chrome.windows.update(windowId, updateInfo, function (window) {
